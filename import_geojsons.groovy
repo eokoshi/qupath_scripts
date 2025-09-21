@@ -4,20 +4,32 @@ import qupath.lib.objects.PathAnnotationObject
 import qupath.lib.objects.PathObject
 import qupath.lib.objects.classes.PathClassFactory
 
-def geojsonFolder = 'C:/Users/ethan/Downloads/ROSE-AI/contours'
+clearAllObjects()
+
+def ROIFolder = buildFilePath(PROJECT_BASE_DIR, "roi")
+def annotationFolder = buildFilePath(PROJECT_BASE_DIR, "annotations")
 
 // Get the name of the current image
 def imageName = getCurrentImageNameWithoutExtension()
 
 // Construct the path to the GeoJSON file for the current image
-def geojsonFilePath = buildFilePath(geojsonFolder, "cnt_" + imageName + ".geojson")
+def roi_path = buildFilePath(ROIFolder, "roi_" + imageName + ".geojson")
+def ann_path = buildFilePath(annotationFolder, imageName + ".geojson")
    
-print geojsonFilePath
 // Check if the GeoJSON file exists
-if (new File(geojsonFilePath).exists()) {
-    def pathObjects = PathIO.readObjects(new File(geojsonFilePath))
-        
-    addObjects(pathObjects)
+if (new File(ann_path).exists()) {
+    print imageName
+    def roi = PathIO.readObjects(new File(roi_path))
+    addObjects(roi)
+    selectAnnotations()
+    classifySelected("ROI")
+    resetSelection()
+    
+    def anns = PathIO.readObjects(new File(ann_path))
+    addObjects(anns)
+    selectObjects(anns)
+    classifySelected("annotation")
+    resetSelection()
 } else {
     println "GeoJSON file not found for image: $imageName"
 }
